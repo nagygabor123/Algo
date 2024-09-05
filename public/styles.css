@@ -1,59 +1,60 @@
 body {
     font-family: Arial, sans-serif;
+    text-align: center;
     background-color: #1f2429; /* Dark background */
     color: #f4f4f4;
     margin: 0;
     padding: 0;
 }
 
-.container {
-    max-width: 1200px;
+p {
+    font-size: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+#countdown {
+    font-size: 25px;
+    font-weight: bold;
+    color: #f39c12;
+}
+
+table {
+    width: 60%;
     margin: 0 auto;
-    padding: 20px;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #34495e;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
 }
 
 h1 {
-    text-align: center;
-    color: #e74c3c; /* Main title red color */
+    padding-top: 50px;
+    font-size: 60px;
+    color: #e74c3c; /* Főcímet piros szín */
 }
 
-#countdown-container {
-    text-align: center;
-    margin-bottom: 20px;
+/* Add styles for trading signals */
+.signal-buy {
+    color: #2ecc71; /* Green for Buy */
 }
 
-.etf-table {
-    margin: 0 auto;
-    max-width: 600px;
+.signal-breakout-buy {
+    color: #27ae60; /* Darker green for Breakout Buy */
 }
 
-.etf-table table {
-    width: 100%;
-    border-collapse: collapse;
+.signal-sell {
+    color: #e74c3c; /* Red for Sell */
 }
 
-.etf-table th, .etf-table td {
-    padding: 10px;
-    text-align: center;
-    border: 1px solid #ddd;
+.signal-breakout-sell {
+    color: #c0392b; /* Darker red for Breakout Sell */
 }
 
-.etf-table th {
-    background-color: #2c3e50; /* Dark header */
-}
-
-.etf-table td {
-    background-color: #34495e; /* Darker cells */
-}
-
-#price-spxl, #price-tqqq, #price-udow, #price-soxl {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #2ecc71; /* Green color for prices */
-}
-
-#signal-spxl, #signal-tqqq, #signal-udow, #signal-soxl {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #e74c3c; /* Red color for signals */
+.signal-hold {
+    color: #ffffff; /* White for Hold */
 }
