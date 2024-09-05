@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leveraged ETF Trading Algorithm</title>
+    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net;">
+</head>
+<body>
+    <div class="container">
+        <h1>Leveraged ETF Trading Recommendations</h1>
+        <div id="countdown-container">
+            <h2>Next Update In: <span id="countdown">60s</span></h2>
+        </div>
+        <div class="etf-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ETF</th>
+                        <th>Price (USD)</th>
+                        <th>Recommendation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>SPXL</td>
+                        <td id="price-spxl">N/A</td>
+                        <td id="signal-spxl">N/A</td>
+                    </tr>
+                    <tr>
+                        <td>TQQQ</td>
+                        <td id="price-tqqq">N/A</td>
+                        <td id="signal-tqqq">N/A</td>
+                    </tr>
+                    <tr>
+                        <td>UDOW</td>
+                        <td id="price-udow">N/A</td>
+                        <td id="signal-udow">N/A</td>
+                    </tr>
+                    <tr>
+                        <td>SOXL</td>
+                        <td id="price-soxl">N/A</td>
+                        <td id="signal-soxl">N/A</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
