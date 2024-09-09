@@ -14,10 +14,12 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "cron": "^3.1.7",
     "express": "^4.19.2",
+    "finnhub": "^1.2.18",
     "helmet": "^7.1.0",
     "moment-timezone": "^0.5.45",
     "technicalindicators": "^3.1.0",
-    "yahoo-finance2": "^2.11.3"
+    "yahoo-finance2": "^2.11.3",
+    "yahoo-stock-prices": "^1.1.0"
   },
   "description": ""
 }

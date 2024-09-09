@@ -43,34 +43,41 @@ async function fetchAndAnalyze() {
       const price = quote.regularMarketPrice;
       etfData[etf].price = price;
 
-      const history = await yahooFinance.historical(etf, { period1: '2023-01-01', interval: '1d' });
-      const closingPrices = history.map(day => day.close);
+      const chartData = await yahooFinance.chart(etf, { period1: '2023-01-01', interval: '1d' });
+      //console.log(`chartData for ${etf}:`, chartData);  // Log the data structure
 
-      const sma50 = ti.sma({ period: 50, values: closingPrices });
-      const sma200 = ti.sma({ period: 200, values: closingPrices });
-      const rsi = ti.rsi({ period: 14, values: closingPrices });
-      const macd = ti.macd({ shortPeriod: 12, longPeriod: 26, signalPeriod: 9, values: closingPrices });
+      // Ensure chartData is in the expected format
+      if (chartData && Array.isArray(chartData.quotes)) {
+        const closingPrices = chartData.quotes.map(day => day.close);
 
-      let signal = 'Hold';
-      if (price > sma50[sma50.length - 1] && price > sma200[sma200.length - 1]) {
-        signal = 'Buy';
-      } else if (price < sma50[sma50.length - 1] && price < sma200[sma200.length - 1]) {
-        signal = 'Sell';
+        const sma50 = ti.sma({ period: 50, values: closingPrices });
+        const sma200 = ti.sma({ period: 200, values: closingPrices });
+        const rsi = ti.rsi({ period: 14, values: closingPrices });
+        const macd = ti.macd({ shortPeriod: 12, longPeriod: 26, signalPeriod: 9, values: closingPrices });
+
+        let signal = 'Hold';
+        if (price > sma50[sma50.length - 1] && price > sma200[sma200.length - 1]) {
+          signal = 'Buy';
+        } else if (price < sma50[sma50.length - 1] && price < sma200[sma200.length - 1]) {
+          signal = 'Sell';
+        }
+
+        const previousHigh = Math.max(...closingPrices.slice(-60));
+        const previousLow = Math.min(...closingPrices.slice(-60));
+
+        if (price > previousHigh) {
+          signal = 'Breakout Buy';
+        } else if (price < previousLow) {
+          signal = 'Breakout Sell';
+        }
+
+        etfData[etf].signal = signal;
+
+        const timeInHungary = moment().tz('Europe/Budapest').format('YYYY-MM-DD HH:mm:ss');
+        console.log(`${timeInHungary}: ${etf} price: ${price}, SMA50: ${sma50[sma50.length - 1]}, SMA200: ${sma200[sma200.length - 1]}, RSI: ${rsi[rsi.length - 1]}, MACD: ${macd[macd.length - 1].MACD}, Signal: ${macd[macd.length - 1].signal}, Signal: ${etfData[etf].signal}`);
+      } else {
+        console.error(`Unexpected chartData format for ${etf}`);
       }
-
-      const previousHigh = Math.max(...closingPrices.slice(-60));
-      const previousLow = Math.min(...closingPrices.slice(-60));
-
-      if (price > previousHigh) {
-        signal = 'Breakout Buy';
-      } else if (price < previousLow) {
-        signal = 'Breakout Sell';
-      }
-
-      etfData[etf].signal = signal;
-
-      const timeInHungary = moment().tz('Europe/Budapest').format('YYYY-MM-DD HH:mm:ss');
-      console.log(`${timeInHungary}: ${etf} price: ${price}, SMA50: ${sma50[sma50.length - 1]}, SMA200: ${sma200[sma200.length - 1]}, RSI: ${rsi[rsi.length - 1]}, MACD: ${macd[macd.length - 1].MACD}, Signal: ${macd[macd.length - 1].signal}, Signal: ${etfData[etf].signal}`);
     } catch (error) {
       console.error(`Error fetching data for ${etf}:`, error);
     }
