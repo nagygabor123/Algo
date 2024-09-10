@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const path = require('path');
 const moment = require('moment-timezone');
 const nodemailer = require('nodemailer');
+const fetch = require('node-fetch'); // Importáljuk a node-fetch modult
 
 const app = express();
 const port = 3000;
@@ -142,6 +143,20 @@ async function fetchAndAnalyze() {
 }
 
 setInterval(fetchAndAnalyze, 60000);
+
+// Pingelés a program életben tartásához
+setInterval(() => {
+  fetch('http://localhost:3000/ping')
+    .then(res => res.text())
+    .then(body => console.log(body))
+    .catch(err => console.error('Error pinging server:', err));
+},  46 * 1000); // 5 percenként pingelünk
+
+// Ping végpont
+app.get('/ping', (req, res) => {
+  res.send('Server is alive');
+});
+
 
 app.get('/data', (req, res) => {
   res.json({ data: etfData, lastUpdateTime });
