@@ -144,13 +144,17 @@ async function fetchAndAnalyze() {
 
 setInterval(fetchAndAnalyze, 60000);
 
-// Pingelés a program életben tartásához
-setInterval(() => {
-  fetch('http://localhost:3000/ping')
-    .then(res => res.text())
-    .then(body => console.log(body))
-    .catch(err => console.error('Error pinging server:', err));
-},  46 * 1000); // 5 percenként pingelünk
+
+function keepAlivePing() {
+  setInterval(() => {
+    fetch('http://localhost:3000/ping')
+      .then(res => res.text())
+      .then(body => console.log(body))
+      .catch(err => console.error('Error pinging server:', err));
+  },  1* 46 * 1000); // 5 percenként pingelünk
+}
+
+keepAlivePing();
 
 // Ping végpont
 app.get('/ping', (req, res) => {
