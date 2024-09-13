@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const path = require('path');
 const moment = require('moment-timezone');
 const nodemailer = require('nodemailer');
-const fetch = require('node-fetch'); // Importáljuk a node-fetch modult
+
 
 const app = express();
 const port = 3000;
@@ -145,21 +145,34 @@ async function fetchAndAnalyze() {
 setInterval(fetchAndAnalyze, 60000);
 
 
-function keepAlivePing() {
-  setInterval(() => {
-    fetch('http://localhost:3000/ping')
-      .then(res => res.text())
-      .then(body => console.log(body))
-      .catch(err => console.error('Error pinging server:', err));
-  },  1* 46 * 1000); // 5 percenként pingelünk
-}
 
-keepAlivePing();
+app.get('/chart-data', async (req, res) => {
+  const etf = req.query.etf;
+  const period = req.query.period || '1y'; // Default to 1 year
 
-// Ping végpont
-app.get('/ping', (req, res) => {
-  res.send('Server is alive');
+  try {
+      let interval = '1d'; // Default to daily data
+      if (period === '1d') {
+          interval = '5m'; // 5-minute intervals for 1-day view
+      } else if (period === '1mo') {
+          interval = '1h'; // Hourly intervals for 1-month view
+      }
+
+      const chartData = await yahooFinance.chart(etf, {
+          period1: moment().subtract(1, period === '1y' ? 'years' : period === '1mo' ? 'months' : 'days').format('YYYY-MM-DD'),
+          interval: interval
+      });
+
+      const dates = chartData.quotes.map(q => moment(q.date).format('YYYY-MM-DD'));
+      const prices = chartData.quotes.map(q => q.close);
+
+      res.json({ dates, prices });
+  } catch (error) {
+      console.error('Error fetching chart data:', error);
+      res.status(500).send('Error fetching chart data');
+  }
 });
+
 
 
 app.get('/data', (req, res) => {

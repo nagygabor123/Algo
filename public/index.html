@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALGO</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Add Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <h1>New beginnings</h1>
@@ -21,6 +23,17 @@
             <!-- Data will be populated here -->
         </tbody>
     </table>
+
+    <!-- Chart Container -->
+    <div id="chart-container">
+        <canvas id="etf-chart"></canvas>
+        <div class="chart-buttons">
+            <button onclick="loadChart('1d')">1 Day</button>
+            <button onclick="loadChart('1mo')">1 Month</button>
+            <button onclick="loadChart('1y')">1 Year</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

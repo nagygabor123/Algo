@@ -1,5 +1,7 @@
 let countdownInterval;
 let lastUpdateTime;
+let selectedETF = ''; // Track which ETF is selected for the chart
+let chart; // Store the chart instance for updates
 
 async function fetchData() {
     try {
@@ -13,6 +15,8 @@ async function fetchData() {
 
         for (const [etf, info] of Object.entries(data)) {
             const row = document.createElement('tr');
+            row.addEventListener('click', () => loadChart('1y', etf)); // Add click event to each ETF
+
             let signalClass = '';
             switch (info.signal) {
                 case 'Buy':
@@ -61,3 +65,57 @@ function updateCountdown() {
 
 countdownInterval = setInterval(updateCountdown, 1000); // Update countdown every second
 fetchData(); // Initial data fetch
+
+// Function to load chart data
+async function loadChart(period, etf = selectedETF) {
+    if (!etf) return;
+
+    selectedETF = etf; // Track the selected ETF
+    const chartContainer = document.getElementById('chart-container');
+    chartContainer.style.display = 'block'; // Show the chart container
+
+    try {
+        const response = await fetch(`/chart-data?etf=${etf}&period=${period}`);
+        const result = await response.json();
+        const labels = result.dates;
+        const prices = result.prices;
+
+        if (chart) {
+            chart.destroy(); // Destroy the old chart before creating a new one
+        }
+
+        const ctx = document.getElementById('etf-chart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: `${etf} Price`,
+                    data: prices,
+                    borderColor: '#f39c12',
+                    backgroundColor: 'rgba(243, 156, 18, 0.2)',
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date',
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Price',
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching chart data:', error);
+    }
+}

@@ -58,3 +58,37 @@ h1 {
 .signal-hold {
     color: #ffffff; /* White for Hold */
 }
+
+/* Chart container styling */
+#chart-container {
+    width: 60%;
+    margin: 50px auto;
+    padding-bottom: 20px;
+    background-color: #34495e;
+    border-radius: 8px;
+    display: none; /* Hide initially */
+}
+
+canvas {
+    max-width: 100%;
+    height: 400px;
+}
+
+.chart-buttons {
+    margin-top: 10px;
+}
+
+.chart-buttons button {
+    padding: 10px;
+    margin-right: 5px;
+    background-color: #f39c12;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.chart-buttons button:hover {
+    background-color: #e67e22;
+}
+
