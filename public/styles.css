@@ -1,13 +1,66 @@
+/* Existing styles */
 body {
     font-family: Arial, sans-serif;
     text-align: center;
-    background-color: #1f2429; /* Dark background */
+    background-color: #1f2429;
     color: #f4f4f4;
     margin: 0;
     padding: 0;
 }
 
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+    background-color: #34495e;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    color: #f4f4f4;
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+}
+
+.modal-content input {
+    display: block; /* Make the input take the full width */
+    padding: 10px;
+    width: 200px;
+    margin: 0 auto 10px auto; /* Center the input and add margin */
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.modal-content button {
+    display: block; /* Make the button full-width */
+    padding: 10px 20px;
+    background-color: #f39c12;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px auto; /* Center the button and add space above */
+}
+
+.modal-content button:hover {
+    background-color: #e67e22;
+}
+
+
 p {
+    margin-top: 30px;
     font-size: 20px;
     padding-top: 20px;
     padding-bottom: 20px;
@@ -22,41 +75,39 @@ p {
 table {
     width: 60%;
     margin: 0 auto;
-    border-collapse: collapse;
+    border-collapse: separate; /* Szükséges a belső keretekhez */
+    border-spacing: 0; /* Nincs köz a cellák között */
     margin-top: 20px;
     background-color: #34495e;
+    border-radius: 10px; /* Lekerekített sarkak */
+    border: none; /* Nincs külső keret */
+    overflow: hidden; /* Fontos a border-radius-hoz */
 }
 
-table, th, td {
-    border: 1px solid #ddd;
+th, td {
+    border: none;
     padding: 8px;
 }
 
-h1 {
-    padding-top: 50px;
-    font-size: 60px;
-    color: #e74c3c; /* Főcímet piros szín */
-}
-
-/* Add styles for trading signals */
+/* Styles for signals */
 .signal-buy {
-    color: #2ecc71; /* Green for Buy */
+    color: #2ecc71;
 }
 
 .signal-breakout-buy {
-    color: #27ae60; /* Darker green for Breakout Buy */
+    color: #27ae60;
 }
 
 .signal-sell {
-    color: #e74c3c; /* Red for Sell */
+    color: #e74c3c;
 }
 
 .signal-breakout-sell {
-    color: #c0392b; /* Darker red for Breakout Sell */
+    color: #c0392b;
 }
 
 .signal-hold {
-    color: #ffffff; /* White for Hold */
+    color: #ffffff;
 }
 
 /* Chart container styling */
@@ -91,4 +142,10 @@ canvas {
 .chart-buttons button:hover {
     background-color: #e67e22;
 }
+
+#main-content {
+    display: none; /* Hide main content initially */
+}
+
+
 

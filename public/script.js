@@ -1,7 +1,21 @@
 let countdownInterval;
 let lastUpdateTime;
-let selectedETF = ''; // Track which ETF is selected for the chart
-let chart; // Store the chart instance for updates
+let selectedETF = 'SPXL'; // Set SPXL as default
+let chart;
+const correctCode = "1234"; // Change this to your desired access code
+
+// Validate access code
+function validateCode() {
+    const enteredCode = document.getElementById('access-code').value;
+    if (enteredCode === correctCode) {
+        document.getElementById('login-modal').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        fetchData(); // Fetch data after showing the main content
+        loadChart('1y', 'SPXL'); // Load SPXL chart by default
+    } else {
+        document.getElementById('error-message').style.display = 'block';
+    }
+}
 
 async function fetchData() {
     try {
@@ -64,13 +78,12 @@ function updateCountdown() {
 }
 
 countdownInterval = setInterval(updateCountdown, 1000); // Update countdown every second
-fetchData(); // Initial data fetch
 
 // Function to load chart data
 async function loadChart(period, etf = selectedETF) {
     if (!etf) return;
 
-    selectedETF = etf; // Track the selected ETF
+    selectedETF = etf;
     const chartContainer = document.getElementById('chart-container');
     chartContainer.style.display = 'block'; // Show the chart container
 
@@ -95,6 +108,7 @@ async function loadChart(period, etf = selectedETF) {
                     borderColor: '#f39c12',
                     backgroundColor: 'rgba(243, 156, 18, 0.2)',
                     fill: true,
+                    pointRadius: 0, // Disable circles on the chart
                 }]
             },
             options: {
@@ -119,3 +133,5 @@ async function loadChart(period, etf = selectedETF) {
         console.error('Error fetching chart data:', error);
     }
 }
+
+
