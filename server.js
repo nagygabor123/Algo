@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const path = require('path');
 const moment = require('moment-timezone');
 const nodemailer = require('nodemailer');
-
+const fs = require('fs');
 
 const app = express();
 const port = 3000;
@@ -24,25 +24,23 @@ let previousSignals = {
   SOXL: ''
 };
 
-let lastUpdateTime = moment().toISOString(); // Track last update time
+let lastUpdateTime = moment().toISOString();
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(helmet());
 
-// Nodemailer transporter beállítása
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Gmail használata, cserélheted másik szolgáltatóra
+  service: 'gmail',
   auth: {
-    user: 'my.algo0909@gmail.com', // Felhasználónév, cseréld ki a saját email címedre
-    pass: 'cqoc rciw saeu avsw ' // Jelszó, cseréld ki a saját email jelszavadra
+    user: 'my.algo0909@gmail.com',
+    pass: 'cqoc rciw saeu avsw'
   }
 });
 
-// Send email notification for buy/sell signals
 function sendEmail(etf, price, sma50, sma200, rsi, macdSignal, signal, timeInHungary) {
   const mailOptions = {
     from: 'my.algo0909@gmail.com',
-    to: 'nagy.gabor@diak.szbi-pg.hu', // Címzett email cím
+    to: 'nagy.gabor@diak.szbi-pg.hu',
     subject: `Trade Signal Alert for ${etf}`,
     text: `Signal for ${etf} generated at ${timeInHungary}:
     - Price: ${price}
@@ -62,7 +60,6 @@ function sendEmail(etf, price, sma50, sma200, rsi, macdSignal, signal, timeInHun
   });
 }
 
-// Function to calculate EMA
 function calculateEMA(values, period) {
   const k = 2 / (period + 1);
   let ema = [values[0]];
@@ -71,6 +68,52 @@ function calculateEMA(values, period) {
   }
   return ema;
 }
+
+function writeDataToFile(etf, price, sma50, sma200, rsi) {
+  const currentDate = moment().format('YYYY-MM-DD');
+  const currentTime = moment().format('HH:mm:ss');
+  const dataToWrite = {
+    date: currentDate,
+    time: currentTime,
+    price: price,
+    sma50: sma50,
+    sma200: sma200,
+    rsi: rsi
+  };
+
+  const fileName = `data/${etf}_data.json`;
+
+  // Check if the file already exists
+  if (fs.existsSync(fileName)) {
+    // Read and append new data to the existing file
+    fs.readFile(fileName, 'utf8', (err, data) => {
+      if (err) throw err;
+
+      let jsonData;
+      try {
+        jsonData = data ? JSON.parse(data) : []; // Check if file has valid content
+      } catch (parseError) {
+        console.error(`Error parsing JSON data in ${fileName}:`, parseError);
+        jsonData = []; // Reset to empty array if there's a parsing error
+      }
+
+      jsonData.push(dataToWrite);
+
+      fs.writeFile(fileName, JSON.stringify(jsonData, null, 2), (err) => {
+        if (err) throw err;
+        console.log(`Data for ${etf} saved successfully.`);
+      });
+    });
+  } else {
+    // Create a new file if it doesn't exist
+    const jsonData = [dataToWrite];
+    fs.writeFile(fileName, JSON.stringify(jsonData, null, 2), (err) => {
+      if (err) throw err;
+      console.log(`File for ${etf} created and data saved.`);
+    });
+  }
+}
+
 
 async function fetchAndAnalyze() {
   for (const etf of Object.keys(etfData)) {
@@ -124,11 +167,13 @@ async function fetchAndAnalyze() {
           const timeInHungary = moment().tz('Europe/Budapest').format('YYYY-MM-DD HH:mm:ss');
           console.log(`${timeInHungary}: ${etf} price: ${price}, SMA50: ${sma50[sma50.length - 1]}, SMA200: ${sma200[sma200.length - 1]}, RSI: ${rsi[rsi.length - 1]}, MACD-Signal: ${macdSignal}, Signal: ${etfData[etf].signal}`);
 
-          // Ellenőrizzük, hogy a jelzés változott-e, és ha igen, küldünk emailt
           if (previousSignals[etf] !== signal) {
             sendEmail(etf, price, sma50[sma50.length - 1], sma200[sma200.length - 1], rsi[rsi.length - 1], macdSignal, signal, timeInHungary);
-            previousSignals[etf] = signal; // Frissítjük az előző jelet
+            previousSignals[etf] = signal;
           }
+
+          // Write data to JSON file
+          writeDataToFile(etf, price, sma50[sma50.length - 1], sma200[sma200.length - 1], rsi[rsi.length - 1]);
         } else {
           console.error(`Not enough data for MACD calculation for ${etf}`);
         }
@@ -144,36 +189,32 @@ async function fetchAndAnalyze() {
 
 setInterval(fetchAndAnalyze, 60000);
 
-
-
 app.get('/chart-data', async (req, res) => {
   const etf = req.query.etf;
-  const period = req.query.period || '1y'; // Default to 1 year
+  const period = req.query.period || '1y';
 
   try {
-      let interval = '1d'; // Default to daily data
-      if (period === '1d') {
-          interval = '5m'; // 5-minute intervals for 1-day view
-      } else if (period === '1mo') {
-          interval = '1h'; // Hourly intervals for 1-month view
-      }
+    let interval = '1d';
+    if (period === '1d') {
+      interval = '5m';
+    } else if (period === '1mo') {
+      interval = '1h';
+    }
 
-      const chartData = await yahooFinance.chart(etf, {
-          period1: moment().subtract(1, period === '1y' ? 'years' : period === '1mo' ? 'months' : 'days').format('YYYY-MM-DD'),
-          interval: interval
-      });
+    const chartData = await yahooFinance.chart(etf, {
+      period1: moment().subtract(1, period === '1y' ? 'years' : period === '1mo' ? 'months' : 'days').format('YYYY-MM-DD'),
+      interval: interval
+    });
 
-      const dates = chartData.quotes.map(q => moment(q.date).format('YYYY-MM-DD'));
-      const prices = chartData.quotes.map(q => q.close);
+    const dates = chartData.quotes.map(q => moment(q.date).format('YYYY-MM-DD'));
+    const prices = chartData.quotes.map(q => q.close);
 
-      res.json({ dates, prices });
+    res.json({ dates, prices });
   } catch (error) {
-      console.error('Error fetching chart data:', error);
-      res.status(500).send('Error fetching chart data');
+    console.error('Error fetching chart data:', error);
+    res.status(500).send('Error fetching chart data');
   }
 });
-
-
 
 app.get('/data', (req, res) => {
   res.json({ data: etfData, lastUpdateTime });
