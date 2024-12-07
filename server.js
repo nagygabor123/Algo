@@ -6,6 +6,7 @@ const path = require('path');
 const moment = require('moment-timezone');
 const nodemailer = require('nodemailer');
 const fs = require('fs');
+const axios = require('axios'); // Új csomag az IP lekéréséhez
 
 const app = express();
 const port = 3000;
@@ -37,7 +38,17 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-function sendEmail(etf, price, sma50, sma200, rsi, macdSignal, signal, timeInHungary) {
+async function fetchPublicIP() {
+  try {
+    const response = await axios.get('https://api.ipify.org?format=json');
+    return response.data.ip;
+  } catch (error) {
+    console.error('Error fetching public IP:', error);
+    return 'Unable to fetch IP';
+  }
+}
+
+async function sendEmail(etf, price, sma50, sma200, rsi, macdSignal, signal, timeInHungary, publicIP) {
   const mailOptions = {
     from: 'my.algo0909@gmail.com',
     to: 'nagy.gabor@diak.szbi-pg.hu',
@@ -48,7 +59,8 @@ function sendEmail(etf, price, sma50, sma200, rsi, macdSignal, signal, timeInHun
     - SMA200: ${sma200}
     - RSI: ${rsi}
     - MACD Signal: ${macdSignal}
-    - Signal: ${signal}`
+    - Signal: ${signal}
+    - Website: http://${publicIP}:3000/` // Az IP cím hozzáadása
   };
 
   transporter.sendMail(mailOptions, function (error, info) {
@@ -83,18 +95,16 @@ function writeDataToFile(etf, price, sma50, sma200, rsi) {
 
   const fileName = `data/${etf}_data.json`;
 
-  // Check if the file already exists
   if (fs.existsSync(fileName)) {
-    // Read and append new data to the existing file
     fs.readFile(fileName, 'utf8', (err, data) => {
       if (err) throw err;
 
       let jsonData;
       try {
-        jsonData = data ? JSON.parse(data) : []; // Check if file has valid content
+        jsonData = data ? JSON.parse(data) : [];
       } catch (parseError) {
         console.error(`Error parsing JSON data in ${fileName}:`, parseError);
-        jsonData = []; // Reset to empty array if there's a parsing error
+        jsonData = [];
       }
 
       jsonData.push(dataToWrite);
@@ -105,7 +115,6 @@ function writeDataToFile(etf, price, sma50, sma200, rsi) {
       });
     });
   } else {
-    // Create a new file if it doesn't exist
     const jsonData = [dataToWrite];
     fs.writeFile(fileName, JSON.stringify(jsonData, null, 2), (err) => {
       if (err) throw err;
@@ -113,7 +122,6 @@ function writeDataToFile(etf, price, sma50, sma200, rsi) {
     });
   }
 }
-
 
 async function fetchAndAnalyze() {
   for (const etf of Object.keys(etfData)) {
@@ -167,12 +175,13 @@ async function fetchAndAnalyze() {
           const timeInHungary = moment().tz('Europe/Budapest').format('YYYY-MM-DD HH:mm:ss');
           console.log(`${timeInHungary}: ${etf} price: ${price}, SMA50: ${sma50[sma50.length - 1]}, SMA200: ${sma200[sma200.length - 1]}, RSI: ${rsi[rsi.length - 1]}, MACD-Signal: ${macdSignal}, Signal: ${etfData[etf].signal}`);
 
+          const publicIP = await fetchPublicIP(); // IP cím lekérése
+
           if (previousSignals[etf] !== signal) {
-            sendEmail(etf, price, sma50[sma50.length - 1], sma200[sma200.length - 1], rsi[rsi.length - 1], macdSignal, signal, timeInHungary);
+            sendEmail(etf, price, sma50[sma50.length - 1], sma200[sma200.length - 1], rsi[rsi.length - 1], macdSignal, signal, timeInHungary, publicIP);
             previousSignals[etf] = signal;
           }
 
-          // Write data to JSON file
           writeDataToFile(etf, price, sma50[sma50.length - 1], sma200[sma200.length - 1], rsi[rsi.length - 1]);
         } else {
           console.error(`Not enough data for MACD calculation for ${etf}`);
